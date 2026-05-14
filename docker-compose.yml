@@ -1,0 +1,55 @@
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+    ports:
+      - "${API_GATEWAY_PORT:-3000}:3000"
+    environment:
+      API_GATEWAY_PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-MY_SECRET_KEY}
+      API_GATEWAY_JWT_EXPIRES_IN: ${API_GATEWAY_JWT_EXPIRES_IN:-1h}
+      THROTTLE_TTL: ${THROTTLE_TTL:-60000}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-10}
+      AUTH_SERVICE_HOST: auth-service
+      AUTH_SERVICE_PORT: 4002
+      USER_SERVICE_HOST: user-service
+      USER_SERVICE_PORT: 3001
+    depends_on:
+      - auth-service
+      - user-service
+
+  auth-service:
+    build:
+      context: ./auth-service
+    environment:
+      AUTH_SERVICE_HOST: 0.0.0.0
+      AUTH_SERVICE_PORT: 4002
+      JWT_SECRET: ${JWT_SECRET:-MY_SECRET_KEY}
+      AUTH_JWT_EXPIRES_IN: ${AUTH_JWT_EXPIRES_IN:-1d}
+    expose:
+      - "4002"
+
+  user-service:
+    build:
+      context: ./user-service
+    environment:
+      USER_SERVICE_HOST: 0.0.0.0
+      USER_SERVICE_PORT: 3001
+    expose:
+      - "3001"
+
+  product-service:
+    build:
+      context: ./product-service
+    ports:
+      - "${PRODUCT_SERVICE_PORT:-3002}:3002"
+    environment:
+      PRODUCT_SERVICE_PORT: 3002
+
+  order-service:
+    build:
+      context: ./order-service
+    ports:
+      - "${ORDER_SERVICE_PORT:-3003}:3003"
+    environment:
+      ORDER_SERVICE_PORT: 3003
